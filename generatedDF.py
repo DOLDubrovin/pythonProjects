@@ -8,19 +8,26 @@
 #%%         
 import pandas as pd
 import numpy as np
-
+import matplotlib.pyplot as plt
+import os
+os.makedirs("output/plots",exist_ok=True)
 # %%
-n=200   #//number of observations
-Age=np.random.randint(18,90,n)#//weparate, becouse of use in Functions
-Sex=np.random.choice(["M","F"],n)
-EF=70-Age*0.4+np.random.normal(0,5,n)#//Vermutung: correlation with age, sd 5
-NYHA_score=(5-EF/15+np.random.normal(0,0.5,n))
-NYHA=np.clip(np.round(NYHA_score),1,4).astype(int)
-HF=np.where((EF>55)&(NYHA==1), "no HF",
+def generate(n=200):   #//number of observations
+    Age=np.clip(np.random.normal(50,10,n),18,90).astype(int)#//weparate, becouse of use in Functions
+    Sex=np.random.choice(["M","F"],n)
+    EF=70-Age*0.4+np.random.normal(0,5,n)#//Vermutung: correlation with age, sd 5
+    NYHA_score=(5-EF/15+np.random.normal(0,0.5,n))
+    NYHA=np.clip(np.round(NYHA_score),1,4).astype(int)
+    HF=np.where((EF>55)&(NYHA==1), "no HF",
                   np.where ((EF>55), "HFpEF",
-                  np.where ((EF>40), "HFmeEF", "HFrEF")))
-HR=100-EF*0.8+np.random.normal(0,5,n) # HF empirisch
-df1 = pd.DataFrame({
+                  np.where ((EF>40), "HFmrEF", "HFrEF")))
+    HF = pd.Categorical(
+    HF,
+    categories=["no HF", "HFpEF", "HFmrEF", "HFrEF"],
+    ordered=True
+    )
+    HR=100-EF*0.8+np.random.normal(0,5,n) # HF empirisch
+    df1 = pd.DataFrame({
 "ObservID":range(1, n+1),#//n+1 besouse the py built to n-1
 "Age":Age,
 "Sex":Sex,
@@ -29,4 +36,8 @@ df1 = pd.DataFrame({
 "HF":HF,
 "HR":HR
 })
+
+    return df1
+df1=generate()
 print(df1)
+df1.to_csv("output/df1.csv", index=False)
